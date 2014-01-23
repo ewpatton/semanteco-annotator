@@ -1,6 +1,12 @@
 SemantEco Annotator
 ===================
 
+See the Annotator in action in our [Quick Look demonstration video](http://www.youtube.com/watch?v=pKO5NwgWnyc) 
+(YouTube, 4:51), or the [full-length demo](https://dl.dropboxusercontent.com/u/86966501/semanteco-annotator.mp4) (Dropbox mp4 download, 10:57).
+
+The SemantEco Annotator [Tetherless World project page](http://tw.rpi.edu/web/project/SemantEcoAnnotator) 
+also contains additional information, and screenshots.
+
 The SemantEco Annotator is a web application built on the SemantEco
 framework to provide a web-based GUI on top of the
 [csv2rdf4lod](https://github.com/timrdf/csv2rdf4lod-automation)
