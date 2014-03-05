@@ -865,23 +865,7 @@ $(document).ready(function () {
 
 	// Import File button shows modal for import
 	$('#menu-import-file').click(function () {
-		$("#fileDialogWrapper").dialog({
-			modal: true,
-			width: 800,
-			draggable: false,
-			resizable: false,
-			buttons: {
-				Import: function () {
-					if ( $("input#importSystemInput").is(":checked") ) {
-						handleFileSelect();    
-					} else {
-						handleUrlSelect();
-					}
-					// close dialog
-					$(this).dialog("close");
-				}
-			}
-		});
+          $("#fileDialogWrapper").dialog( "open" );
 	});
 
 	$('#menu-show-downloads').click(function () {
@@ -1152,21 +1136,12 @@ $(function () {
 //Load a CSV file from a URL
 function handleUrlSelect() {
 	$.bbq.pushState({ "csvUri": $("input#fileDialogFileURL").val() });
+    // naive, but it should work under most scenarios
+    var pathParts = $("input#fileDialogFileURL").val().split("/");
+    $.bbq.pushState({"filename": pathParts[pathParts.length-1]});
 
 	// Show modal
-	$("#data_info_form").dialog({
-		modal: true,
-		width: 800,
-		buttons: {
-			Ok: function () {
-				//var uriPrefix = addPackageLevelData();
-				//var prefixes = createPrefix(uriPrefix);
-				//d3.select("#here-be-rdfa").attr("rdfa:prefix", prefixes);
-				GreenTurtle.attach(document,true);
-				$(this).dialog("close");
-			}
-		}
-	});    
+    $("#data_info_form").dialog("open");
 
 	AnnotatorModule.getCSVFile({}, function (d) {
 		console.log(d);
@@ -1174,24 +1149,60 @@ function handleUrlSelect() {
 	});
 }
 
+$("#data_info_form").dialog({
+  modal: true,
+  autoOpen: false,
+  width: 800,
+  buttons: {
+    Ok: function () {
+      var source = $("#source_info").val() != "" ?
+        $("#source_info").val() :
+        $("#source_add_new").val();
+      var dataset = $("#dataset_info").val() != "" ?
+        $("#dataset_info").val() :
+        $("#dataset_add_new").val();
+      var version = $("#version_info").val();
+      $.bbq.pushState({"source":source,
+                       "dataset":dataset,
+                       "version":version});
+
+      AnnotatorModule.readCsvFileForInitialConversion({
+          "csvFile": window.file_contents
+        }, function (d) {
+          console.log(d);
+        });
+
+      GreenTurtle.attach(document,true);
+      $(this).dialog("close");
+    }
+  }
+});
+
+$("#fileDialogWrapper").dialog({
+  modal: true,
+  autoOpen: false,
+  width: 800,
+  draggable: false,
+  resizable: false,
+  buttons: {
+    Import: function () {
+      if ( $("input#importSystemInput").is(":checked") ) {
+	handleFileSelect();
+      } else {
+	handleUrlSelect();
+      }
+      // close dialog
+      $(this).dialog("close");
+    }
+  }
+});
+
 //Load a CSV file from the user system
 $(function () {
 	$('body').on('click' ,'input#menu-show-data-info-form', function(e) {
 		$("p.info-form-temp-notifier").hide();
 		// Show modal
-		$("#data_info_form").dialog({
-			modal: true,
-			width: 800,
-			buttons: {
-				Ok: function () {
-					//var uriPrefix = addPackageLevelData();
-					//var prefixes = createPrefix(uriPrefix);
-					//d3.select("#here-be-rdfa").attr("rdfa:prefix", prefixes);
-					GreenTurtle.attach(document,true);
-					$(this).dialog("close");
-				}
-			}
-		});    
+	  $("#data_info_form").dialog("open");
 	});
 });
 

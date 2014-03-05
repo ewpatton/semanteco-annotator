@@ -25,19 +25,9 @@ function handleFileSelect(event) {
     var reader = new FileReader();
     
     // Show modal
-    $("#data_info_form").dialog({
-        modal: true,
-        width: 800,
-        buttons: {
-            Ok: function () {
-				//var uriPrefix = addPackageLevelData();
-				//var prefixes = createPrefix(uriPrefix);
-				//d3.select("#here-be-rdfa").attr("rdfa:prefix", prefixes);
-				GreenTurtle.attach(document,true);
-                $(this).dialog("close");
-            }
-        }
-    });
+    $.bbq.pushState( { "filename": file.name } );
+    var date = file.lastModifiedDate;
+    $("#data_info_form").dialog( "open" );
 
     // Read the file in!
     reader.readAsText(file);
@@ -270,10 +260,4 @@ function buildTable(data) {
     window.a = [];
     // window.a.push({"annotationMappings":[{"initialization":"0"}]});
     // send the csv file to the server
-    AnnotatorModule.readCsvFileForInitialConversion({
-            "csvFile": window.file_contents
-        },
-        function (d) {
-            console.log(d);
-        });
 }

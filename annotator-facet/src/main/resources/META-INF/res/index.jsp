@@ -182,9 +182,9 @@
                             <form>
                                 <select id="source_info" style=" overflow:hidden;padding:0 ;width:100%;height:100%;border:1;" placeholder="Who provided/created this data?">
                                     <option value="">-- Select a Source --</option>
-                                    <option value="org1">Tetherless World</option>
-                                    <option value="org2">EPA</option>
-                                    <option value="org3">USGS</option>
+                                    <option value="tw.rpi.edu">Tetherless World</option>
+                                    <option value="epa.gov">EPA</option>
+                                    <option value="usgs.gov">USGS</option>
                                 </select>OR
                                 <input type="text" id="source_add_new" placeholder="add a new source" onsubmit="dropdownAdd(this);">
                             </form>
