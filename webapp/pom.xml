@@ -28,6 +28,7 @@
     <!-- specify artifact for default module here -->
     <module.default>semanteco-annotator</module.default>
     <use-servlet>semanteco-servlet-websocket</use-servlet>
+    <cr.directories.data-root>java.io.tmpdir</cr.directories.data-root>
   </properties>
 
   <dependencies>

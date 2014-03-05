@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -19,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -152,6 +154,9 @@ conversion:enhance [
 public class AnnotatorModule implements Module {
 
 	private ModuleConfiguration config = null;
+	private static final String DATA_DIR_VAR = "cr.directories.data-dir";
+	private static final String TMPDIR_VAR = "java.io.tmpdir";
+	private static String DATA_DIR;
 	private static final String RDFS_NS = "http://www.w3.org/2000/01/rdf-schema#";
 	private static final String BINDINGS = "bindings";
 	private static final String FAILURE = "{\"success\":false}";
@@ -447,18 +452,14 @@ public class AnnotatorModule implements Module {
 	 * @throws FileNotFoundException 
 	 */
 	@QueryMethod(method=HTTP.POST)
-	public String readCsvFileForInitialConversion(final Request request) throws FileNotFoundException{
-		System.out.println("the request object is : " + request.toString());
+	public String readCsvFileForInitialConversion(final Request request) throws FileNotFoundException {
+	    String csvFileLocation = getFileName( request, true );
 		String csvFileAsString = (String) request.getParam("csvFile");
-		//System.out.println("file : " + file);
-		System.out.println(request.getParam("csvFile"));
 		
-		request.getLogger().debug("The file object is of type : " + request.getParam("csvFile").getClass());
-		csvFileWriter = new PrintWriter( csvFileLocation);
-		csvFileWriter.println(csvFileAsString);
+		csvFileWriter = new PrintWriter( csvFileLocation );
+		csvFileWriter.print(csvFileAsString);
 		csvFileWriter.close();
 		request.getLogger().debug("CSV file written to : " + csvFileLocation);
-		//FileUtils.writeStringToFile(new File("test.txt"), "Hello File");
 		return null;
 	}
 
@@ -505,20 +506,12 @@ public class AnnotatorModule implements Module {
 	public String queryForEnhancingParams(final Request request) throws IOException, JSONException{
 		String dateStamp = getDateTime();
 		System.out.println("turtle is : " + request.getParam("turtle"));
-		PrintWriter csvFile = this.csvFileWriter;
+		String csvFileLocation = getFileName( request, true );
 		String[] arguments = new String[] {csvFileLocation," --header-line '1'"," --delimiter ,"};
-        String eId = "1";
 		List<String> headerList = CSVHeadersForAnnotator.getHeaders(arguments);
 		request.getLogger().debug("headers are : " + headerList.toString());	
-		/* generateParmsFileFromHeaders(headerList, paramsFile, surrogate, sourceId, 
-	    			datasetId, datasetVersion, null, 
-	    			conversionID, cellDelimiter, null, null, null,
-	    			null, null, null, username, 
-	    			machineUri, username);
-	    */
-		//write the string the paramsFile path
 		
-		String parametersFullPath = System.getProperty("AnnotatorRootPath")  + "RDF-data" + File.separator + "parameters-" + dateStamp + ".ttl";
+		String parametersFullPath = csvFileLocation + ".e1.ttl";
 		
 		System.err.println("parametersFullPath: " + parametersFullPath);
 		String turtleFileAsString = (String) request.getParam("turtle");
@@ -531,32 +524,13 @@ public class AnnotatorModule implements Module {
           }
         } 
 		
-		File file = new File(parametersFullPath);
-		System.err.println("parameters file path: " + parametersFullPath);
-		//File yourFile = new File("score.txt");
-		if(!file.exists()) {
-		    file.createNewFile();
-		}
-		
-		FileOutputStream fos = new FileOutputStream(parametersFullPath);	
-		
-		byte[] contentInBytes = turtleFileAsString.getBytes();
-		fos.write(contentInBytes);
-		fos.close();
+		FileOutputStream fos = new FileOutputStream(parametersFullPath);
+		PrintStream ps = new PrintStream( fos );
+		ps.print( turtleFileAsString );
+		ps.close();
 
-		
-		//CharArrayReader reader = new CharArrayReader(turtleFileAsString.toCharArray());
-		//fos.write(turtleFileAsString);
-		
-		//fos.write(arg0);
-	//	fos.close();
-		
-		//can split by one forward slash
-		//.getOriginalURL(): http://localhost:8081/annotator/rest/AnnotatorModule/queryForEnhancingParams
 		String[] parts = request.getOriginalURL().toString().split("/");
         return convertToRdfWithEnhancementsFile(csvFileLocation, parametersFullPath, parts[0] + "/" + parts[1] + "/" + parts[2] + "/" + parts[3] + "/", dateStamp); 
-        //convertToRdfWithEnhancementsFile(csvFileLocation, paramsFile); 
-		//return null;
 	}
 	private  final static String getDateTime()  
 	{  
@@ -3184,7 +3158,74 @@ OntModel model = null;
 
 	@Override
 	public void setModuleConfiguration(final ModuleConfiguration config) {
-		this.config = config;
+        this.config = config;
+        String dir = null;
+	    if ( ( dir = System.getProperty(DATA_DIR_VAR, null) ) != null ) {
+	        if ( dir.equals( TMPDIR_VAR ) ) {
+	            dir = System.getProperty( TMPDIR_VAR );
+	        }
+	        DATA_DIR = dir;
+	    } else if ( ( dir = config.getProperty(DATA_DIR_VAR, null) ) != null ) {
+	        if ( dir.equals( TMPDIR_VAR ) ) {
+	            dir = System.getProperty( TMPDIR_VAR );
+	        }
+	        DATA_DIR = dir;
+	    } else {
+	        DATA_DIR = System.getProperty( TMPDIR_VAR );
+	    }
+	}
+
+	private String getStringParam( final Request request, final String param ) {
+	    Object values = request.getParam( param );
+	    if ( values == null ) {
+	        return null;
+	    } else if ( values instanceof String ) {
+	        return (String) values;
+	    } else if ( values instanceof JSONArray ) {
+	        return ((JSONArray) values).optString( 0 );
+	    }
+	    return null;
+	}
+
+	private String getFileName( final Request request, final boolean mkdir ) {
+	    String source = getStringParam( request, "source" ),
+	            dataset = getStringParam( request, "dataset" ),
+	            version = getStringParam( request, "version" ),
+	            /* TODO: sanitize the filename. we just assume the client has
+	             * sent something valid but malicious clients could use relative
+	             * paths.
+	             */
+	            filename = getStringParam( request, "filename" );
+	    if ( source == null ) {
+	        throw new IllegalArgumentException( "source should be specified." );
+	    } else if ( dataset == null ) {
+	        throw new IllegalArgumentException( "dataset should be specified." );
+	    } else if ( version == null ) {
+	        throw new IllegalArgumentException( "version should be specified." );
+	    } else if ( filename == null ) {
+	        throw new IllegalArgumentException( "filename should be specified." );
+	    }
+	    source = source.replaceAll("\\.", "-");
+        final char PS = File.separatorChar;
+        StringBuilder sb = new StringBuilder( DATA_DIR );
+        sb.append( PS );
+	    sb.append( source );
+	    sb.append( PS );
+	    sb.append( dataset );
+	    sb.append( PS );
+	    sb.append( "version" );
+	    sb.append( PS );
+	    sb.append( version );
+	    sb.append( PS );
+	    if ( mkdir ) {
+	        File dir = new File( sb.toString() );
+	        if ( !dir.exists() && !dir.mkdirs() ) {
+	            throw new SecurityException( "Unable to create directory " +
+	                    dir.getAbsolutePath() + " with mkdirs specified.");
+	        }
+	    }
+	    sb.append( filename );
+	    return sb.toString();
 	}
 
 }
