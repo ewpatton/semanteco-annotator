@@ -27,6 +27,11 @@ function handleFileSelect(event) {
     // Show modal
     $.bbq.pushState( { "filename": file.name } );
     var date = file.lastModifiedDate;
+    var month = date.getMonth() + 1;
+    month = ( month < 10 ? "0" : "" ) + month;
+    var dateStr = date.getFullYear() + "-" + month + "-" +
+        date.getDate();
+    $("#version_info").val( dateStr );
     $("#data_info_form").dialog( "open" );
 
     // Read the file in!

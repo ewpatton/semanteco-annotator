@@ -3062,7 +3062,30 @@ OntModel model = null;
 		//return config.getQueryExecutor(request).accept("application/json").executeLocalQuery(query, model);
 	}
 
-
+	@QueryMethod
+	public String getLastModified(final Request request) {
+	    String url = (String) request.getParam("csvUri");
+	    if ( url == null ) {
+	        return "";
+	    }
+	    HttpURLConnection conn;
+        try {
+            conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setRequestMethod("HEAD");
+            conn.connect();
+            long date = conn.getLastModified();
+            if ( date == 0 ) {
+                return "";
+            }
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            return format.format(new Date(date));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+	}
 
 	public String executeLocalQuery(Query query, Model model) {
 

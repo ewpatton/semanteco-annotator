@@ -1141,6 +1141,9 @@ function handleUrlSelect() {
     $.bbq.pushState({"filename": pathParts[pathParts.length-1]});
 
 	// Show modal
+    AnnotatorModule.getLastModified({}, function(d) {
+        $("#version_info").val( d );
+    });
     $("#data_info_form").dialog("open");
 
 	AnnotatorModule.getCSVFile({}, function (d) {
