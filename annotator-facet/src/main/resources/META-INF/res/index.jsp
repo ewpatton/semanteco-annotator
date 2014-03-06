@@ -259,6 +259,10 @@
 			</table>
 		</div>
 
+        <span id="buildNumber">
+            <core:property name="buildNumber" />
+        </span>
+
         <!-- Load Javascript libraries -->
         <!-- Local JS Libraries -->
         <!-- Load Core JQuery Libraries First -->
