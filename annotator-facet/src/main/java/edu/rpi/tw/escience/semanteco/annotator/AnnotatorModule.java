@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+import org.apache.log4j.lf5.util.StreamUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -156,6 +157,7 @@ public class AnnotatorModule implements Module {
 	private ModuleConfiguration config = null;
 	private static final String DATA_DIR_VAR = "cr.directories.data-dir";
 	private static final String TMPDIR_VAR = "java.io.tmpdir";
+	private static final String ROOT_DIR = System.getProperty("AnnotatorRootPath");
 	private static String DATA_DIR;
 	private static final String RDFS_NS = "http://www.w3.org/2000/01/rdf-schema#";
 	private static final String BINDINGS = "bindings";
@@ -453,7 +455,8 @@ public class AnnotatorModule implements Module {
 	 */
 	@QueryMethod(method=HTTP.POST)
 	public String readCsvFileForInitialConversion(final Request request) throws FileNotFoundException {
-	    String csvFileLocation = getFileName( request, true );
+	    String csvFileLocation = getFileName( request, true,
+	            CSV2RDFPath.SDV_SOURCE );
 		String csvFileAsString = (String) request.getParam("csvFile");
 		
 		csvFileWriter = new PrintWriter( csvFileLocation );
@@ -506,17 +509,19 @@ public class AnnotatorModule implements Module {
 	public String queryForEnhancingParams(final Request request) throws IOException, JSONException{
 		String dateStamp = getDateTime();
 		System.out.println("turtle is : " + request.getParam("turtle"));
-		String csvFileLocation = getFileName( request, true );
+		String csvFileLocation = getFileName( request, true,
+		        CSV2RDFPath.SDV_SOURCE );
 		String[] arguments = new String[] {csvFileLocation," --header-line '1'"," --delimiter ,"};
 		List<String> headerList = CSVHeadersForAnnotator.getHeaders(arguments);
 		request.getLogger().debug("headers are : " + headerList.toString());	
 		
-		String parametersFullPath = csvFileLocation + ".e1.ttl";
+		String parametersFullPath = getFileName( request, true,
+		        CSV2RDFPath.SDV_MANUAL ) + ".e1.ttl";
 		
 		System.err.println("parametersFullPath: " + parametersFullPath);
 		String turtleFileAsString = (String) request.getParam("turtle");
 		
-        File rdfdir = new File(System.getProperty("AnnotatorRootPath") + File.separator + "RDF-data");
+        File rdfdir = new File(ROOT_DIR + File.separator + "RDF-data");
         if ( !rdfdir.exists() ) {
           if ( !rdfdir.mkdir() ) {
             // not writeable!
@@ -3209,7 +3214,7 @@ OntModel model = null;
 	    }
 	}
 
-	private String getStringParam( final Request request, final String param ) {
+	private static String getStringParam( final Request request, final String param ) {
 	    Object values = request.getParam( param );
 	    if ( values == null ) {
 	        return null;
@@ -3221,7 +3226,8 @@ OntModel model = null;
 	    return null;
 	}
 
-	private String getFileName( final Request request, final boolean mkdir ) {
+	private static String getFileName( final Request request,
+	        final boolean mkdir, final CSV2RDFPath path ) {
 	    String source = getStringParam( request, "source" ),
 	            dataset = getStringParam( request, "dataset" ),
 	            version = getStringParam( request, "version" ),
@@ -3243,14 +3249,33 @@ OntModel model = null;
         final char PS = File.separatorChar;
         StringBuilder sb = new StringBuilder( DATA_DIR );
         sb.append( PS );
-	    sb.append( source );
-	    sb.append( PS );
-	    sb.append( dataset );
-	    sb.append( PS );
-	    sb.append( "version" );
-	    sb.append( PS );
-	    sb.append( version );
-	    sb.append( PS );
+        if ( path != CSV2RDFPath.ROOT ) {
+            sb.append( source );
+            sb.append( PS );
+            if ( path != CSV2RDFPath.SOURCE ) {
+                sb.append( dataset );
+                sb.append( PS );
+                if ( path != CSV2RDFPath.DATASET ) {
+                    sb.append( "version" );
+                    sb.append( PS );
+                    sb.append( version );
+                    sb.append( PS );
+                    if ( path == CSV2RDFPath.SDV_SOURCE ) {
+                        sb.append( "source" );
+                        sb.append( PS );
+                    } else if ( path == CSV2RDFPath.SDV_MANUAL ) {
+                        sb.append( "manual" );
+                        sb.append( PS );
+                    } else if ( path == CSV2RDFPath.SDV_DOC ) {
+                        sb.append( "doc" );
+                        sb.append( PS );
+                    } else if ( path == CSV2RDFPath.SDV_AUTOMATIC ) {
+                        sb.append( "automatic" );
+                        sb.append( PS );
+                    }
+                }
+            }
+        }
 	    if ( mkdir ) {
 	        File dir = new File( sb.toString() );
 	        if ( !dir.exists() && !dir.mkdirs() ) {
@@ -3262,4 +3287,15 @@ OntModel model = null;
 	    return sb.toString();
 	}
 
+	private static enum CSV2RDFPath {
+	    ROOT,
+	    SOURCE,
+	    DATASET,
+	    VERSION,
+	    SDV_MANUAL,
+	    SDV_SOURCE,
+	    SDV_DOC,
+	    SDV_AUTOMATIC,
+	    SDV_PUBLISH
+	}
 }
