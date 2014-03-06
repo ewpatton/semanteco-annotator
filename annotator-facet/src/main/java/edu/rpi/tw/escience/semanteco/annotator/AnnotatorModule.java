@@ -751,8 +751,11 @@ public class AnnotatorModule implements Module {
 	      System.err.println("tomcat URL: " + tomcatURL +  generatedRDFPath );
 	      //create a json object that returns 2 urls
 	      JSONObject jobj = new JSONObject();
-	      jobj.put("rdfDataFile", tomcatURL + generatedRDFPath );
-	      jobj.put("paramsFile", tomcatURL + paramsPath);
+          // fix for https://github.com/ewpatton/semanteco-annotator/issues/12
+          // fix: removed tomcatURL prepend
+	      jobj.put("rdfDataFile", generatedRDFPath );
+	      jobj.put("paramsFile", paramsPath);
+	      // end fix
 	     // git remote add origin git@github.com:apseyed/SemantEcoAnnotator.git
 
 	      
