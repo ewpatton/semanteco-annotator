@@ -23,6 +23,10 @@
     <url-pattern>/provenance</url-pattern>
   </servlet-mapping>
 
+  <listener>
+    <listener-class>edu.rpi.tw.escience.AnnotatorContextListener</listener-class>
+  </listener>
+
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>

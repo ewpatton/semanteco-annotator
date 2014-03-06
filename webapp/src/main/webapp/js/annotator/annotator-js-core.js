@@ -827,8 +827,10 @@ $(document).ready(function () {
 			results = jQuery.parseJSON(d);
 			var paramsURL = results.paramsFile;
 			var rdfURL = results.rdfDataFile;
-			var paramsLink = paramsURL.split('/')[5];
-			var rdfLink = rdfURL.split('/')[5];
+			var paramsLink = paramsURL.split('/');
+                        paramsLink = paramsLink[paramsLink.length-1];
+			var rdfLink = rdfURL.split('/');
+                        rdfLink = rdfLink[rdfLink.length-1];
 			var r,p,f;
 			var table = document.getElementById("download-manager");
 			r = table.insertRow(0);
