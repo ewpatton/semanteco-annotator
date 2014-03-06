@@ -738,6 +738,14 @@ public class AnnotatorModule implements Module {
    
 	     // return readFileAsString(outputRdfFileLocation);
 	      System.err.println("returning : "  + System.getProperty("AnnotatorRootPath") + File.separator + generatedRDFPath);
+	      // begin fix for https://github.com/ewpatton/semanteco-annotator/issues/9
+	      File origParams = new File( enhancementParametersURL );
+	      File stagedParams = new File( ROOT_DIR + File.separator + paramsPath );
+	      if ( !origParams.equals( stagedParams ) ) {
+	          StreamUtils.copy( new FileInputStream( origParams ),
+	                  new FileOutputStream( stagedParams ) );
+	      }
+	      // end fix
 	      System.err.println("tomcat URL: " + tomcatURL);
 	      //return "http://localhost:8081/"+ "RDF-data" + "/enhanced-rdf.ttl";
 	      System.err.println("tomcat URL: " + tomcatURL +  generatedRDFPath );
