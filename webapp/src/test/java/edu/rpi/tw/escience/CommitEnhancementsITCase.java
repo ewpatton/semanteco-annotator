@@ -1,15 +1,21 @@
 package edu.rpi.tw.escience;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.lf5.util.StreamUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -57,7 +63,7 @@ public class CommitEnhancementsITCase extends SemantEcoITCase {
     }
 
     @Test
-    public void testCommitEnhancements() throws InterruptedException {
+    public void testCommitEnhancements() throws InterruptedException, IOException {
         // browse to the annotator
         driver.get("http://localhost:9999/annotator/");
         assertEquals("Semantic Annotator", driver.getTitle());
@@ -103,9 +109,15 @@ public class CommitEnhancementsITCase extends SemantEcoITCase {
 
         // verify that the download manager contains the new <a> elements
         WebElement downloadManager = driver.findElement( By.id( "download-manager" ) );
-        //driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
-        Thread.sleep(60000);
+        driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
         List<WebElement> dlLinks = downloadManager.findElements( By.tagName( "a" ) );
+        if ( dlLinks.size() != 2 ) {
+            TakesScreenshot browser = (TakesScreenshot) driver;
+            File tempFile = browser.getScreenshotAs(OutputType.FILE);
+            File tempFile2 = File.createTempFile("screenshot", "png");
+            StreamUtils.copyThenClose( new FileInputStream( tempFile ),
+                    new FileOutputStream( tempFile2 ) );
+        }
         assertEquals( 2, dlLinks.size() );
 
         // check each link for a valid turtle document using Jena
