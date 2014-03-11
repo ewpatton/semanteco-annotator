@@ -10,9 +10,7 @@ public class AnnotatorContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
-        if(System.getProperty("AnnotatorRootPath") == null) {
-            System.setProperty("AnnotatorRootPath", context.getRealPath("/"));
-        }
+        System.setProperty("AnnotatorRootPath", context.getRealPath("/"));
     }
 
     @Override
