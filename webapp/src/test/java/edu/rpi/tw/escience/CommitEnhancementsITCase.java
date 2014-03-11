@@ -1,5 +1,6 @@
 package edu.rpi.tw.escience;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
@@ -68,7 +69,8 @@ public class CommitEnhancementsITCase extends SemantEcoITCase {
         // select the file
         button = driver.findElement(By.id("the_file"));
         assertClickable( button );
-        String pathToFile = getPathForTestResource( "countryList.csv" );
+        String pathToFile = getPathForTestResource( "countrylist.csv" );
+        assert( new File(pathToFile).exists() );
         button.sendKeys( pathToFile );
         button = findButtonWithText("Import");
         assertClickable( button );
@@ -84,7 +86,8 @@ public class CommitEnhancementsITCase extends SemantEcoITCase {
         text = driver.findElement( By.id( VERSION ) );
 
         // test that the last modified date of the file was automatically detected
-        assertEquals( "2014-03-10", text.getAttribute( "value" ) );
+        assertEquals( getLastModifiedDate( pathToFile ),
+                text.getAttribute( "value" ) );
         button = findButtonWithText( "Ok" );
         assertClickable( button );
         button.click();
@@ -95,7 +98,7 @@ public class CommitEnhancementsITCase extends SemantEcoITCase {
         button.click();
 
         // this may need to be adjusted for slower machines
-        Thread.sleep(2000);
+        Thread.sleep(5000);
 
         // verify that the download manager contains the new <a> elements
         WebElement downloadManager = driver.findElement( By.id( "download-manager" ) );
