@@ -836,8 +836,8 @@ $(document).ready(function () {
 			r = table.insertRow(0);
 			p = r.insertCell(0);
 			f = r.insertCell(1);
-			$(p).append($('<a>').attr('href',paramsURL).text(paramsLink));
-			$(f).append($('<a>').attr('href',rdfURL).text(rdfLink));
+			$(p).append($('<a>').attr('href',paramsURL).attr('target','_new').text(paramsLink));
+			$(f).append($('<a>').attr('href',rdfURL).attr('target','_new').text(rdfLink));
 			
 			$("#finalLinksModal").dialog({
 				modal: true,
