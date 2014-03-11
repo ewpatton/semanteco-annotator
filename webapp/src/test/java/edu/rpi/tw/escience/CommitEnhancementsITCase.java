@@ -3,6 +3,7 @@ package edu.rpi.tw.escience;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -102,6 +103,8 @@ public class CommitEnhancementsITCase extends SemantEcoITCase {
 
         // verify that the download manager contains the new <a> elements
         WebElement downloadManager = driver.findElement( By.id( "download-manager" ) );
+        //driver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
+        Thread.sleep(60000);
         List<WebElement> dlLinks = downloadManager.findElements( By.tagName( "a" ) );
         assertEquals( 2, dlLinks.size() );
 
