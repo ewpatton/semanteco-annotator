@@ -1,8 +1,5 @@
 package edu.rpi.tw.escience.semanteco.annotator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import com.hp.hpl.jena.ontology.OntModel;

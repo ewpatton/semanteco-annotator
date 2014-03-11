@@ -41,6 +41,7 @@
     <dependency>
       <groupId>edu.rpi.tw.escience</groupId>
       <artifactId>semanteco-test</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.clarkparsia.pellet</groupId>
@@ -64,17 +65,6 @@
       <groupId>aterm</groupId>
       <artifactId>aterm-java</artifactId>
       <version>1.6</version>
-    </dependency>
-    <dependency>
-      <groupId>com.hp.hpl.jena</groupId>
-      <artifactId>arq</artifactId>
-      <version>2.8.8</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.hp.hpl.jena</groupId>
-          <artifactId>jena</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>net.sourceforge.owlapi</groupId>
@@ -111,7 +101,13 @@
       <artifactId>owlapi-apibinding</artifactId>
       <version>3.4</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>2.11.1</version>
+    </dependency>
   </dependencies>
+
   <repositories>
     <repository>
       <id>tetherless</id>
@@ -133,8 +129,8 @@
       <name>Rootdev maven repository, via ssh</name>
       <url>scp://maven@www.rootdev.net/home/maven/site/repo</url>
     </repository>
-
   </repositories>
+
   <build>
     <plugins>
       <plugin>
@@ -148,4 +144,50 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      <activation>
+        <property>
+          <name>run-its</name>
+        </property>
+      </activation>
+
+      <properties>
+        <sonar.language>java</sonar.language>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.surefire.reportsPath>${project.basedir}/target/surefire-reports</sonar.surefire.reportsPath>
+        <sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
+        <sonar.jacoco.itReportPath>${project.basedir}/../target/jacoco-it.exec</sonar.jacoco.itReportPath>
+      </properties>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>initialize-jacoco</id>
+                <goals><goal>prepare-agent</goal></goals>
+                <configuration>
+                  <destFile>${sonar.jacoco.reportPath}</destFile>
+                  <dataFile>${sonar.jacoco.reportPath}</dataFile>
+                  <append>true</append>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>${argLine}</argLine>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
