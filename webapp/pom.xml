@@ -4,7 +4,7 @@
 
   <parent>
     <groupId>edu.rpi.tw.escience</groupId>
-    <artifactId>semanteco-parent</artifactId>
+    <artifactId>semanteco-annotator-all</artifactId>
     <version>4.2-SNAPSHOT</version>
   </parent>
 
@@ -22,12 +22,13 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <tomcat.version>7.0.29</tomcat.version>
     <tomcat.port>8080</tomcat.port>
     <tomcat.url>http://localhost:${tomcat.port}/manager/text</tomcat.url>
     <!-- specify artifact for default module here -->
     <module.default>semanteco-annotator</module.default>
-    <use-servlet>semanteco-servlet-websocket</use-servlet>
+    <use-servlet>semanteco-servlet</use-servlet>
     <cr.directories.data-root>java.io.tmpdir</cr.directories.data-root>
   </properties>
 
