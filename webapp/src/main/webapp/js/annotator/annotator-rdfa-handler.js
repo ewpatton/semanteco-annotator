@@ -318,7 +318,8 @@ function createCellBasedNode(cbCols){
 		//d3.select(type).attr("rdfa:typeof","qb:Observation");
 		var colList = "";
 		for ( i in cbCols ){
-			colList += cbCols[i] + ",";
+			if ( cbCols.hasOwnProperty(i) )
+				colList += cbCols[i] + ",";
 		}
 		colList = colList.substring(0, colList.length - 1); // strip off the last comma
 		$(cols).text(colList);
