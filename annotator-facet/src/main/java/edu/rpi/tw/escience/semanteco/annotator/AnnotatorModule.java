@@ -537,6 +537,7 @@ public class AnnotatorModule implements Module {
 		String[] parts = request.getOriginalURL().toString().split("/");
         return convertToRdfWithEnhancementsFile(csvFileLocation, parametersFullPath, parts[0] + "/" + parts[1] + "/" + parts[2] + "/" + parts[3] + "/", dateStamp); 
 	}
+	// Katie note: add functionality here to parse dates in a variety of formats??
 	private  final static String getDateTime()  
 	{  
 	   // DateFormat df = new SimpleDateFormat("yyyy-MM-dd_hh:mm:ss");  
