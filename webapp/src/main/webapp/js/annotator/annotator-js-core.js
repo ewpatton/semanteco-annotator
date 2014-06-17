@@ -1,20 +1,48 @@
 //Brendan Edit: Organize all the code
 var debugGlobal;
 
+
+//Like the above, the indices of columns designated for cell-based conversion 
+//are kept in an array, as well, which is empty at creation. The callback for
+//"toggle-cell-based" adds to and removes from this array;
+var cellBased;
 //For download history
-var downloadHistory = [];
-
-//Keeps track of class assignments.
-var subclassOfNodeArray = [];
-
+var downloadHistory;
+//Brendan Global Variable - Track ontolgies added by user (custom ones via a URL)
+var customUserOntologies;
 //Keeps track of the ID's of the bundles.
 //These stay constant regardless of the bundle's resource or name, to make it
 //easier to find the bundles.
-var bundleIdManager = new BundleIdManager();
-
+var bundleIdManager;
+//This array is for keeping track of bundles. Unlike the above, this array will 
+//contain OBJECTS, with each one describing one bundle. The bundle objects are
+//defined in the bundle function above; details about each part of the bundle
+//are elaborated upon there.
+var bundles;
 //Keeps track of ID's of annotations, just so we can iterate through them and make
 //RDFa when the user commits enhancements.
-var annotationID = 0;
+var annotationID;
+
+
+// Initialize global variables, EITHER from sessionStorage or to initial state
+function initGlobals() {
+	console.log("initGlobals() called");
+	if (typeof(Storage)== "undefined" ){
+		alert("Your browser does not support HTML5 sessionStorage. You will lose your work if you refresh the page.");
+	}
+	else{
+	// The following functions can be found in annotator-js-utility.js:
+		initCellBased();
+		initDlHist();
+		initCustOnotologies();
+		initIDManager();
+		initBundleArray();
+		initAnnotationID();
+	}
+}// /initGlobals
+
+//Keeps track of class assignments.
+var subclassOfNodeArray = [];
 
 //This array is for keeping track of the column indices of all selected columns.
 //It is empty at creation. The callbacks in the column selector function should
@@ -31,22 +59,8 @@ var currentlySelected = [];
 //be the only function that can modify this array.
 var links_via = [];
 
-//Like the above, the indices of columns designated for cell-based conversion 
-//are kept in an array, as well, which is empty at creation. The callback for
-//"toggle-cell-based" adds to and removes from this array;
-var cellBased = [];
-
-//This arrayis for keeping track of bundles. Unlike the above, this array will 
-//contain OBJECTS, with each one describing one bundle. The bundle objects are
-//defined in the bundle function above; details about each part of the bundle
-//are elaborated upon there.
-var bundles = [];
-
 //Brendan Global Variable - Track selection in ontology dropdown for changes
 var selectedOntologies = [];
-
-//Brendan Global Variable - Track ontolgies added by user (custom ones via a URL)
-var customUserOntologies = [];
 
 
 //(window).trigger("rendered_tree.semanteco", div);
@@ -165,7 +179,7 @@ function createBundleSubtable(bundleID, implicitID) {
 		}
 		colID = $(this).attr('id').split(",")[1];
 		generatedOptions += "<option value = \"" + colID + "\">Column " + colID + " (" + itemLabel + ")</option>"
-	});
+	});// /validHeadersToBundle.each
 
 	tbody += '<tr><td id=bundleResource,' + bundleID + '><form style="background:white" onchange="updateResource(\''+bundleID+'\');" action="return false;"><select id="bundle-resource-select,'+bundleID+'" class="bundle-select">' + generatedOptions + '</select></form></td></tr>\n';
 	tbody += '<tr><td id=bundleName,' + bundleID + '><p class="ellipses marginOverride editable-input">[name template]</p></td></tr>\n';
@@ -174,20 +188,22 @@ function createBundleSubtable(bundleID, implicitID) {
 	var tfooter = '</table>';
 	var subtable = theader + tbody + tfooter;
 	return subtable;
-}
+}// /createBundleSubtable
 
 //******************************************************************************
 //context menu and its callback functions!
 //******************************************************************************
 
-//Enabling and dis
-//Creates and enables the context menu on the column headers!
-//Each function is placed under "items", and should have a NAME and a CALLBACK.
-//If a callback is not specified, then it will utilize the default callback.
-$(function () {
-	$.contextMenu({
-		selector: '.the-context-menu',
-		build: function($trigger, e) {
+$(document).ready(function(){
+	//Enabling and dis
+	//Creates and enables the context menu on the column headers!
+	//Each function is placed under "items", and should have a NAME and a CALLBACK.
+	//If a callback is not specified, then it will utilize the default callback.
+	$(document).on('contextmenu', '#list', function(){
+		console.log("activating context menu....");
+		$.contextMenu({
+			selector: '.the-context-menu',
+			build: function($trigger, e) {
 			// this callback is executed every time the menu is to be shown
 			// its results are destroyed every time the menu is hidden
 			// e is the original contextmenu event, containing e.pageX and e.pageY (amongst other data)
@@ -233,11 +249,10 @@ $(function () {
 						//}
 						// Break each loop
 						return false;
-					}
+					}// if in bundle
 				});
-			});
-
-			return {
+				}); // /iterate through bundles
+				return {
 				// This is the default callback, which will be used for any functions
 				//    that do not have their own callbacks specified. It echoes the 
 				//    key of the selection and the column on which the menu was invoked
@@ -246,7 +261,7 @@ $(function () {
 					var index = ($("th").index(this))+1;
 					var m = "clicked: " + key + ", invoked on col: " + index;
 					console.log(m);
-				},
+				},// /default callback
 				// Each of these is one item in the context menu list.
 				// Documentation at http://medialize.github.io/jQuery-contextMenu/docs.html
 				items: {
@@ -298,6 +313,9 @@ $(function () {
 								}); // /$.each
 							}
 							console.log("currently specified for cell-based: " + cellBased);
+							// update the parts of state that have changed:
+							sessionStorage.setItem("table", document.getElementById("list").innerHTML);
+							sessionStorage.setItem("cellBasedCols", JSON.stringify(cellBased));
 						} // /cell-based callback
 					}, // /cell-based
 
@@ -438,16 +456,17 @@ $(function () {
 
 									// Insert new header table, colspan if first in group, else hide
 									if (index == 0) {
-										item.append(createBundleSubtable(newBundle._id, newBundle.implicitId)).attr("colspan", colspan);                                
+										item.append(createBundleSubtable(newBundle._id, newBundle.implicitId)).attr("colspan", colspan);
 									} else {
 										item.addClass("hidden");                               
 									}
 									// TODO: Disable the forms here .attr("disabled", "disabled");
 								});
-							});
+							});// for each item in the bundle
+							sessionStorage.setItem("table", document.getElementById("list").innerHTML);
 							currentlySelected = [newBundle._id];
-						}
-					},
+						}// /callback
+					},// /bundle
 
 					"comment": {
 						// Adds a comment to the Annotation Row
@@ -508,9 +527,9 @@ $(function () {
 										$(this).dialog("close");
 									}
 								}
-							});
-						}
-					},
+							});// /domainTemplateModal dialog
+						}// /callback
+					},// /edit domain template
 
 					"add-canonical-value": {
 						// Like addComment, this allows a user to add a canonical value
@@ -540,14 +559,12 @@ $(function () {
 										$(this).dialog("close");
 									}
 								}
-							});
-
+							}); // /canonicalModal dialog
 						} // /callback function
-
-					}, // /eg
+					}, // /add canonical value
 
 					"add-subject-annotation": {
-						// Subject Annotation addes new triples. Forced triples is what we like to call it.
+						// Subject Annotation adds new triples. Forced triples is what we like to call it.
 						name: "Add Subject Annotation",
 						callback: function () {
 							var index = ($("th").index(this))+1;
@@ -559,6 +576,8 @@ $(function () {
 							//var cText = document.getElementById("subjectAnnotationObjectModalInput").value;
 							//addAnnotationRDFa(index,annotationID,cType,cText);
 							addAnnotation(index,cType,cText);
+							sessionStorage.setItem("table", document.getElementById("list").innerHTML);
+							sessionStorage.setItem("rdfa", document.getElementById("e_process").innerHTML);
 							GreenTurtle.attach(document,true);
 							/*$("#subjectAnnotationModal").dialog({
                                 modal: true,
@@ -572,12 +591,14 @@ $(function () {
                                 }
                             }); */
 						}
-					}
+					}// /add subject annotation
 				} // /items
-			};
-		}
-	}); // /context menu
-}); // /context menu function
+			};// /return (callbacks)
+			}// /build
+			}); // /context menu
+		}// /function 
+	);// /document.on()
+});
 
 //***************************************************
 //DRAG AND DROP
@@ -706,7 +727,9 @@ var dnd = {
 					}
 				});
 			}
-		}
+		sessionStorage.setItem("table", document.getElementById("list").innerHTML);
+		sessionStorage.setItem("rdfa", document.getElementById("e_process").innerHTML);
+		}// /drop finish
 }; 
 
 //A function that given a DnD dropTarget and the sourceFacet of the drop, restrict a label on this cell
@@ -784,9 +807,68 @@ $(window).bind("rendered_tree.semanteco", function (e, div) {
 //=====================================================================
 
 $(document).ready(function () {
-
-
-
+// Make the column headers selectable and updates the currentlySelected
+//    array accordingly when things are selected or unselected.
+	$('body').on('click', '#list', function(){
+		console.log("activating selectables....");
+		$("tr.col-selectable").selectable({
+			filter: "th.column-header",
+			autoRefresh: false,
+			cancel: "p.editable-input,input,textarea,button,select,option",
+			selected: function (event, ui) {
+				var index = parseInt($(ui.selected).attr("id").split(",")[1]);
+				var tableheader = (document.getElementById("0," + index));
+				// If we select a bundle header, we want to push the bundle ID to the currentlySelected list
+				//  * NOTE that this SHOULD be a STRING....
+				if ( $(tableheader).hasClass("bundled-implicit") ){
+					var tableID = (tableheader).getElementsByTagName('table')[0].id;
+					var bundleID = (tableID.split(',')[1]).toString();
+					currentlySelected.push(bundleID);
+					console.log("selecting bundle " + bundleID + "....");
+				}
+				// Otherwise, just add the (integer) index of the column to the array
+				else {
+					currentlySelected.push(index);
+					console.log("selecting col " + index + "....");
+				}
+				//$("colgroup,"+index).addClass("selected-col");
+				// We have added new items to the array, so sort it ascending by index
+				currentlySelected = dedupe(currentlySelected);
+				//currentlySelected.sort();
+				console.log("currently Selected: " + currentlySelected);
+			}, // /selected
+			unselected: function (event, ui) {
+				//console.log(this, $(this), event, ui);
+				var index = parseInt($(ui.unselected).attr("id").split(",")[1]);
+				var tableheader = (document.getElementById("0," + index));
+				var indexInSelected;
+				// We never want to have a hidden column selected. If a column is hidden, that means it is part
+				// 	of a bundle and is then subordinate to that bundle. The bundle can then be selectable, but
+				// 	the individual column, not necessarily.
+				if ( $(tableheader).hasClass("hidden") ){ 
+					return;
+				}
+				// If a column header is in a bundle, we want to select the whole bundle. We already know a bundle
+				// 	contains all the columns that are part of it. (If we really need the subordinate columns, we can
+				// 	get them from references to the bundle).
+				else if ( $(tableheader).hasClass("bundled-implicit") ){
+					var tableID = (tableheader).getElementsByTagName('table')[0].id;
+					var bundleID = (tableID.split(',')[1]).toString();
+					indexInSelected = currentlySelected.indexOf(bundleID);
+					currentlySelected.splice(indexInSelected, 1);
+					console.log("unselecting bundle " + bundleID + "....");
+				}
+				else {
+					indexInSelected = currentlySelected.indexOf(index);
+					console.log("unselect index: " + indexInSelected);
+					currentlySelected.splice(indexInSelected, 1);
+					console.log("unselecting " + index + "....");
+				}
+				console.log("currently Selected: " + currentlySelected);
+			}// /unselected
+		}); // /selectable
+	});// /selectable event binding
+	
 	// Check on mouseenter if ellipses are being used, qtip if they are (works on dynamicly created qtips)
 	$('body').on('mouseenter' ,'.ellipses', function(e) {
 		if (this.offsetWidth < this.scrollWidth) {
@@ -863,7 +945,7 @@ $(document).ready(function () {
 
 	// TODO: rewrite these in jquery syntax
 	//document.getElementById('the_form').addEventListener('submit', handleFileSelect, false);
-	document.getElementById('the_file').addEventListener('change', fileInfo, false);
+	document.getElementById('the_file').addEventListener('change', fileInfo, false); // FIX THIS
 
 	// Import File button shows modal for import
 	$('#menu-import-file').click(function () {
@@ -932,7 +1014,6 @@ $(document).ready(function () {
 
 //Query for ontologies. Broken into own function as can be called from multiple places
 function queryOntologies(ontologies) {
-
 	// No ontologies means no change to dropdown selection
 	if ( ontologies == undefined ) {
 		var current = $.bbq.getState("listOfOntologies");
@@ -944,6 +1025,7 @@ function queryOntologies(ontologies) {
 	}
 
 	// Build current state of ontologies
+	// Why is this getting all of the customUserOntologies (and not just the most recent one)?
 	var ontologies = ontologies.concat(customUserOntologies);
 
 	$.bbq.pushState({
@@ -1035,9 +1117,6 @@ function queryOntologies(ontologies) {
 				//now call roots for Individuals facet
 
 			});
-
-
-
 		});// /initOWLModel
 	}
 }
@@ -1174,7 +1253,7 @@ $("#data_info_form").dialog({
       AnnotatorModule.readCsvFileForInitialConversion({
           "csvFile": window.file_contents
         }, function (d) {
-          console.log(d);
+          //console.log(d);
         });
 
       GreenTurtle.attach(document,true);

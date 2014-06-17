@@ -92,6 +92,7 @@ function updateProp(index,colType,theProperty){
 		bNode.appendChild(propNode);
 	}
 	$(propNode).attr("href",theProperty);
+	sessionStorage.setItem("rdfa", document.getElementById("e_process").innerHTML);
 }// /updateProp
 
 function updateClassType(index,colType,classURI,classLabel,sourceFacet){
@@ -145,6 +146,7 @@ function updateClassType(index,colType,classURI,classLabel,sourceFacet){
 		else // for whatever reason the new thing is neither a class nor a datatype!?!?1//
 			console.log("updateClassType: invalid sourceFacet!\nExpected: 'class' or 'datatype'\nReceived: " + sourceFacet);
 	}
+	sessionStorage.setItem("rdfa", document.getElementById("e_process").innerHTML);
 }// /updateClassType
 
 // Checks to see whether there has been a Data Type assignment
@@ -229,6 +231,7 @@ function addPackageLevelData(){
 	elem.insertBefore(otherParams);
 	
 	return full;
+	sessionStorage.setItem("rdfa", document.getElementById("e_process").innerHTML);
 }// /addPackageLevelData
 
 // in progress
@@ -525,6 +528,7 @@ function finalizeTriples(){
 function turtleGen(){
 	finalizeTriples()
 	document.data.implementation.attach(document);
+	sessionStorage.setItem("rdfa", document.getElementById("e_process").innerHTML);
 	var turtle = document.data.graph.toString({shorten: true, numericalBlankNodePrefix: "c"});
 	console.log(turtle);
     return turtle;
