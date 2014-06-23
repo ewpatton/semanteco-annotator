@@ -33,6 +33,7 @@ function handleFileSelect(event) {
     var dateStr = date.getFullYear() + "-" + month + "-" +
         date.getDate();
     $("#version_info").val( dateStr );
+	sdvHolder.version = dateStr;
     $("#data_info_form").dialog( "open" );
 
     // Read the file in!

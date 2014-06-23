@@ -1326,16 +1326,20 @@ function searchOntologies(){
 	userquery = userquery.replace(" ", ",");
 	var url = "http://dataonetwc.tw.rpi.edu/linkipedia/search?" + userquery;
 	console.log("Sending query: " + url);
-	$.getJSON(url, {datatype: "jsonp"})
-		.done(function(response){
+	$.ajax({
+		url: url, 
+		datatype: "jsonp",
+		success: function(response){
+			console.log(data);
 			$.each(response, function(key, val) {
 				var tr=$('<tr></tr>');
 				$.each(val, function(k, v){
 					$('<td>'+v+'</td>').appendTo(tr);
 				});
-			tr.appendTo('#ontologySearchResults');
+				tr.appendTo('#ontologySearchResults');
 			});// /each item in response
-		});// /.done
+		}// /success
+	});// /ajax
 }// /searchOntologies
 
 //if the row is hidden (ie, this is the first comment added), show the row

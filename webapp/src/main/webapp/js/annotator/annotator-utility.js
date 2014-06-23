@@ -1,6 +1,6 @@
 document.addEventListener("load", loadTables());
 document.addEventListener("load", initGlobals());
-document.addEventListener("beforeunload", saveSDV());
+//document.addEventListener("beforeunload", saveSDV());
 
 // for arrays, need localStorage.setItem("thing", JSON.stringify(thing)); to save
 // JSON.parse(sessionStorage.getItem("thing")); to load
@@ -102,8 +102,12 @@ function initSDVHolder(){
 		console.log("-- loading sdvHolder from sessionStorage");
 		var holder = JSON.parse(sessionStorage.getItem("sdv"));
 		sdvHolder.source = holder.source;
+		$("#source_info").val(sdvHolder.source);
 		sdvHolder.dataset = holder.dataset;
+		$("#dataset_info").val(sdvHolder.dataset);
 		sdvHolder.version = holder.version;
+		$("#version_info").val(sdvHolder.version);
+		console.log("-- SDV: " + sdvHolder.source + ", " + sdvHolder.dataset + ", " + sdvHolder.version);
 	}
 	else{
 		sdvHolder = {};
@@ -111,31 +115,24 @@ function initSDVHolder(){
 	}
 }
 
-function saveSDV(){
-	var source, dataset, version;
-	// if the user specified a source, use that...
-	if ( $("source_add_new").value ){
-		source = $("source_add_new").value.replace(/\W+/g,'');
+// updates the source, dataset, and version info:
+$("#data_info_form").on("change", "form", function( event ){
+	var which = event.target.id.split("_")[0];
+	console.log(which);
+	if( which == "source" ){
+		console.log("updating source");
+		sdvHolder.source = event.target.value;
 	}
-	// ... otherwise, check the dropdown... 
-	else if( $("source_info").value ) {
-		source = $("source_info").value;
+	else if( which == "dataset" ){
+		console.log("updating dataset");		
+		sdvHolder.dataset = event.target.value;
 	}
-	// ... and let the user know if everything's null
-	if ( $("datsaset_add_new").value ){
-		dataset = $("dataset_add_new").value.replace(/\W+/g,'');
+	else if( which == "version" ){
+		console.log("updating version");
+		sdvHolder.version = event.target.value;
 	}
-	// ... otherwise, check the dropdown... 
-	else if( $("dataset_info").value ) {
-		dataset = $("dataset_info").value;
-	}
-	if ( $("version_info").value ) {
-		version += $("version_info").value;
-		version = version.replace(/\W+/g,'');
-	}
-	console.log("Saving SDV: " + source + " " + dataset + " " + version);
-	sdvHolder.source = source;
-	sdvHolder.dataset = dataset;
-	sdvHolder.version = version;
+	else console.log("idek: " + event.target.id);
+	
+	console.log("saving to sessionStorage");
 	sessionStorage.setItem("sdv", JSON.stringify(sdvHolder));
-}// /saveSDV
+});
