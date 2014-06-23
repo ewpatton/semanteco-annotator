@@ -1,7 +1,8 @@
 document.addEventListener("load", loadTables());
 document.addEventListener("load", initGlobals());
+document.addEventListener("beforeunload", saveSDV());
 
-// for arrays, need JSON.stringify(); to save
+// for arrays, need localStorage.setItem("thing", JSON.stringify(thing)); to save
 // JSON.parse(sessionStorage.getItem("thing")); to load
 
 // html/string
@@ -93,3 +94,48 @@ function initAnnotationID(){
 		annotationID = 0;
 	}
 }
+
+// object
+function initSDVHolder(){
+	if(sessionStorage.sdv){
+		sdvHolder = {};
+		console.log("-- loading sdvHolder from sessionStorage");
+		var holder = JSON.parse(sessionStorage.getItem("sdv"));
+		sdvHolder.source = holder.source;
+		sdvHolder.dataset = holder.dataset;
+		sdvHolder.version = holder.version;
+	}
+	else{
+		sdvHolder = {};
+		console.log("-- creating sdvHolder");
+	}
+}
+
+function saveSDV(){
+	var source, dataset, version;
+	// if the user specified a source, use that...
+	if ( $("source_add_new").value ){
+		source = $("source_add_new").value.replace(/\W+/g,'');
+	}
+	// ... otherwise, check the dropdown... 
+	else if( $("source_info").value ) {
+		source = $("source_info").value;
+	}
+	// ... and let the user know if everything's null
+	if ( $("datsaset_add_new").value ){
+		dataset = $("dataset_add_new").value.replace(/\W+/g,'');
+	}
+	// ... otherwise, check the dropdown... 
+	else if( $("dataset_info").value ) {
+		dataset = $("dataset_info").value;
+	}
+	if ( $("version_info").value ) {
+		version += $("version_info").value;
+		version = version.replace(/\W+/g,'');
+	}
+	console.log("Saving SDV: " + source + " " + dataset + " " + version);
+	sdvHolder.source = source;
+	sdvHolder.dataset = dataset;
+	sdvHolder.version = version;
+	sessionStorage.setItem("sdv", JSON.stringify(sdvHolder));
+}// /saveSDV

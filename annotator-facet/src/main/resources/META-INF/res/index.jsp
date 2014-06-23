@@ -245,8 +245,12 @@
         
         <!-- Brendan Edit, creating a modal for adding additional ontologies -->
         <div id="addOntologyModal" class="hidden">
-            <p>Specify a URL for your new ontology below.</p>
+            <p>Specify a URL for your ontology below to import it:</p>
             <input type="text" id="addOntologyModalInput" placeHolder="e.g. http://www.example.com/ontology.owl" />
+			<p>OR search for term(s) to find relevant ontologies:</p>
+			<input type="text" id="ontologySearchInput" placeholder="e.g. gene, protein" /> <button type="button" id="ontologySearch" form="ontologySearchInput" onclick="searchOntologies()">Search</button>
+			<table id="ontologySearchResults" class="hidden"> 
+			</table>			
 			<p>Recent ontology imports:</p>
 			<table id="ontology-manager">
 			</table>
@@ -276,9 +280,9 @@
         <script type="text/javascript" src="js/annotator/jquery.contextMenu.js"></script>
         <script type="text/javascript" src="js/annotator/jquery.ui.position.js"></script>
         <!-- Annotator Core Code -->
-		<script type="text/javascript" src="js/annotator/annotator-js-core.js"></script>
-		<script type="text/javascript" src="js/annotator/annotator-js-utility.js"></script>
-        <script type="text/javascript" src="js/annotator/annotator-js-file-io.js"></script>
+		<script type="text/javascript" src="js/annotator/annotator-core.js"></script>
+		<script type="text/javascript" src="js/annotator/annotator-utility.js"></script>
+        <script type="text/javascript" src="js/annotator/annotator-file-io.js"></script>
         <script type="text/javascript" src="js/annotator/annotator-rdfa-handler.js"></script>
     </body>
 </html>

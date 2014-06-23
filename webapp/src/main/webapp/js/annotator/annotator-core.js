@@ -22,6 +22,8 @@ var bundles;
 //Keeps track of ID's of annotations, just so we can iterate through them and make
 //RDFa when the user commits enhancements.
 var annotationID;
+// Holds the SDV info until it is written
+var sdvHolder;
 
 
 // Initialize global variables, EITHER from sessionStorage or to initial state
@@ -38,6 +40,7 @@ function initGlobals() {
 		initIDManager();
 		initBundleArray();
 		initAnnotationID();
+		initSDVHolder();
 	}
 }// /initGlobals
 
@@ -464,6 +467,7 @@ $(document).ready(function(){
 								});
 							});// for each item in the bundle
 							sessionStorage.setItem("table", document.getElementById("list").innerHTML);
+							sessionStorage.setItem("bundles", JSON.stringify(bundles));
 							currentlySelected = [newBundle._id];
 						}// /callback
 					},// /bundle
@@ -500,6 +504,8 @@ $(document).ready(function(){
 									}// /OK function
 								}// /buttons
 							});// /dialog
+							sessionStorage.setItem("table", document.getElementById("list").innerHTML);
+							sessionStorage.setItem("aID", annotationID);
 						} // /callback function
 					}, // /addComment
 
@@ -664,8 +670,8 @@ var dnd = {
 			//console.log("colType: " + columnType + ", colID: " + columnID);
 
 			if (columnType == "annotationRow") { // we're dealing with an annotation
-				var annotationID = target.attr("id").split(",")[2];
-				console.log("dropped onto annotation #" + annotationID);
+				var aID = target.attr("id").split(",")[2];
+				console.log("dropped onto annotation #" + aID);
 				if ( sourceFacet == "class" || sourceFacet == "datatype" ) {
 					console.log("dnd updating annotation object...");
 					updateAnnotationObj(columnID,annotationID,uri,payload);
@@ -673,7 +679,7 @@ var dnd = {
 				}
 				else if (sourceFacet=="objectProperty" || sourceFacet=="datatypeProperty" || sourceFacet=="annotationProperty") {
 					console.log("dnd updating annotation predicate...");
-					updateAnnotationPred(columnID,annotationID,uri,payload);
+					updateAnnotationPred(columnID,aID,uri,payload);
 				}
 			}
 
@@ -1290,7 +1296,7 @@ $(function () {
 	});
 });
 
-//Load a CSV file from the user system
+//Load a user-specified ontology from a URL
 $(function () {
 	$('body').on('click' ,'input#menu-add-new-ontology', function(e) {
 		// Show modal
@@ -1308,11 +1314,29 @@ $(function () {
 					$(ontologyURI).append($('<a>').attr('href',importOntology).text(importOntology));
 					
 					$(this).dialog("close");
-				}
-			}
+				}// /load
+			}// /buttons
 		});    
 	});
 });
+
+// This needs fixin'
+function searchOntologies(){
+	var userquery = $('input#ontologySearchInput').val();
+	userquery = userquery.replace(" ", ",");
+	var url = "http://dataonetwc.tw.rpi.edu/linkipedia/search?" + userquery;
+	console.log("Sending query: " + url);
+	$.getJSON(url, {datatype: "jsonp"})
+		.done(function(response){
+			$.each(response, function(key, val) {
+				var tr=$('<tr></tr>');
+				$.each(val, function(k, v){
+					$('<td>'+v+'</td>').appendTo(tr);
+				});
+			tr.appendTo('#ontologySearchResults');
+			});// /each item in response
+		});// /.done
+}// /searchOntologies
 
 //if the row is hidden (ie, this is the first comment added), show the row
 function checkAnnotationRow(){
