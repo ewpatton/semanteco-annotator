@@ -1,6 +1,5 @@
 document.addEventListener("load", loadTables());
 document.addEventListener("load", initGlobals());
-//document.addEventListener("beforeunload", saveSDV());
 
 // for arrays, need localStorage.setItem("thing", JSON.stringify(thing)); to save
 // JSON.parse(sessionStorage.getItem("thing")); to load

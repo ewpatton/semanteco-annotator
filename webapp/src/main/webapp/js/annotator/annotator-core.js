@@ -1324,23 +1324,34 @@ $(function () {
 function searchOntologies(){
 	var userquery = $('input#ontologySearchInput').val();
 	userquery = userquery.replace(" ", ",");
-	var url = "http://dataonetwc.tw.rpi.edu/linkipedia/search?" + userquery;
+	var url = "http://dataonetwc.tw.rpi.edu/linkipedia/search?query=" + userquery;
 	console.log("Sending query: " + url);
 	$.ajax({
 		url: url, 
 		datatype: "jsonp",
-		success: function(response){
-			console.log(data);
-			$.each(response, function(key, val) {
-				var tr=$('<tr></tr>');
-				$.each(val, function(k, v){
-					$('<td>'+v+'</td>').appendTo(tr);
-				});
-				tr.appendTo('#ontologySearchResults');
-			});// /each item in response
+		success: function(data){
+			$('#ontologySearchResults').innerHTML = "";
+			console.log(data.results);
+			for ( i in data.results ){
+				if ( data.results.hasOwnProperty(i) ){
+					console.log("index: " + data.results[i].url + ", " + data.results[i].score);
+					var tr=$('<tr>').append(
+						$('<td>').text(data.results[i].url).attr("class", "resultURI"),
+						$('<td>').text(data.results[i].score)
+					);
+					tr.appendTo('#ontologySearchResults');
+				}
+			};// /for
+			$('#ontologySearchResults').removeClass("hidden");
 		}// /success
 	});// /ajax
 }// /searchOntologies
+
+$('#ontologySearchResults').on('click', 'tr', function(event){
+	var theURI = event.target.parentNode.children[0].innerHTML.split('#')[0].replace(/&(g|l)t;/g, "")
+	console.log("You clicked " + theURI);
+	$("#addOntologyModalInput").val(theURI);
+});
 
 //if the row is hidden (ie, this is the first comment added), show the row
 function checkAnnotationRow(){
