@@ -243,6 +243,15 @@
 		top: 13px;
 		right:	24px;
     }
+	
+	.showResults {
+		display: block;
+		height: 200px;
+		overflow-y: scroll;
+	}
+	.hideResults{
+		display: none;
+	}
 
     input[type='button'], input[type='submit'] {
     	width: auto;

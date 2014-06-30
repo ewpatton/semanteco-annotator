@@ -1307,6 +1307,7 @@ $(function () {
 				Load: function () {
 					var importOntology = $('input#addOntologyModalInput').val();
 					customUserOntologies.push(importOntology);
+					sessionStorage.setItem("custOntologies", JSON.stringify(customUserOntologies));
 					queryOntologies(undefined);
 					var table = document.getElementById("ontology-manager");
 					var r = table.insertRow(0);
@@ -1342,7 +1343,7 @@ function searchOntologies(){
 					tr.appendTo('#ontologySearchResults');
 				}
 			};// /for
-			$('#ontologySearchResults').removeClass("hidden");
+			$('#ontologySearchResults').toggleClass("hideResults showResults");
 		}// /success
 	});// /ajax
 }// /searchOntologies

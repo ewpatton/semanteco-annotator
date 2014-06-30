@@ -249,7 +249,7 @@
             <input type="text" id="addOntologyModalInput" placeHolder="e.g. http://www.example.com/ontology.owl" />
 			<p>OR search for term(s) to find relevant ontologies:</p>
 			<input type="text" id="ontologySearchInput" placeholder="e.g. gene, protein" /> <button type="button" id="ontologySearch" form="ontologySearchInput" onclick="searchOntologies()">Search</button>
-			<table id="ontologySearchResults" class="hidden"> 
+			<table id="ontologySearchResults" class="hideResults"> 
 			</table>			
 			<p>Recent ontology imports:</p>
 			<table id="ontology-manager">
