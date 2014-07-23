@@ -597,7 +597,29 @@ $(document).ready(function(){
                                 }
                             }); */
 						}
-					}// /add subject annotation
+					},// /add subject annotation
+					
+					"ontology-recommendation": {
+						// test
+						name: "Ontology Recommendation",
+						callback: function () {
+							//here I need to preprocess with the user profile before I can get the keyword
+							var keyword = $('keyword').val();
+							keyword = keyword.replace(" ", ",");
+							var recommendquery = "http://dataonetwc.tw.rpi.edu/linkipedia/search?query=" + keyword;
+							console.log("Sending query: " + recommendquery);
+							$.ajax({
+								url: url, 
+								datatype: "jsonp",
+								success: function(data){
+									$('#ontologySearchResults').innerHTML = "";
+									console.log(data.results);
+									getDetailCallback(data.results[0].url);
+								}// /success
+							});// /ajax
+						
+						}// /recommend ontologies
+					}// /ontology recommendation
 				} // /items
 			};// /return (callbacks)
 			}// /build
@@ -1321,6 +1343,13 @@ $(function () {
 	});
 });
 
+function getDetailCallback(url) {
+	url = url.substr(1, url.length-2);
+	return function() {
+        window.open('http://orion.tw.rpi.edu/~zhengj3/wod/earthdisplay.php?url='+url,'Details','width=600,height=400');
+	};
+}
+
 // This needs fixin'
 function searchOntologies(){
 	var userquery = $('input#ontologySearchInput').val();
@@ -1338,8 +1367,8 @@ function searchOntologies(){
 					console.log("index: " + data.results[i].url + ", " + data.results[i].score);
 					var tr=$('<tr>').append(
 						$('<td>').text(data.results[i].url).attr("class", "resultURI"),
-						$('<td>').text(data.results[i].score)
-					);
+						//$('<td>').text(data.results[i].score),
+						$('<input>').attr({'type': 'button'}).val("Details").click(getDetailCallback(data.results[i].url)));
 					tr.appendTo('#ontologySearchResults');
 				}
 			};// /for
