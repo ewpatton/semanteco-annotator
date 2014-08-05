@@ -60,6 +60,10 @@
       <groupId>edu.rpi.tw.escience</groupId>
       <artifactId>semanteco-servlet-base</artifactId>
     </dependency>
+	<dependency>
+      <groupId>edu.rpi.tw.escience</groupId>
+      <artifactId>semanteco-user-json</artifactId>
+    </dependency>
     <dependency>
       <groupId>edu.rpi.tw.escience</groupId>
       <artifactId>${use-servlet}</artifactId>
